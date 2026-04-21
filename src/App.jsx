@@ -165,7 +165,7 @@ export default function BudgetPlanner() {
                       borderRadius: 2, padding: "14px 16px",
                       opacity: acc.status === "upcoming" ? 0.6 : 1,
                     }}>
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                      <div style={{ width: "100%" }}>
                         <div>
                           <p style={{ fontSize: 13, color: "#e8e2d9", margin: "0 0 3px" }}>{acc.bank}</p>
                           <p style={{ fontSize: 11, color: "#888", margin: "0 0 6px" }}>{acc.name}</p>
