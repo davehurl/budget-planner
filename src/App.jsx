@@ -85,6 +85,13 @@ export default function BudgetPlanner() {
     date: new Date().toISOString().split("T")[0],
   });
   const [expandedCat, setExpandedCat] = useState(null);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 640);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 640);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   useEffect(() => {
     (async () => {
@@ -127,27 +134,35 @@ export default function BudgetPlanner() {
   const totalSpent = Object.values(spentByCategory).reduce((a, b) => a + b, 0);
   const leftOver = TAKE_HOME_MONTHLY - totalBudget;
 
+  const p = isMobile ? "16px" : "40px";
+
   return (
-    <div style={{ fontFamily: "Georgia, Times New Roman, serif", background: "#0f0f0f", minHeight: "100vh", color: "#e8e2d9" }}>
-      <div style={{ borderBottom: "1px solid #2a2a2a", padding: "32px 40px 24px" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", maxWidth: 960, margin: "0 auto" }}>
+    <div style={{ fontFamily: "Georgia, Times New Roman, serif", background: "#0f0f0f", minHeight: "100vh", minHeight: "100dvh", color: "#e8e2d9", width: "100%" }}>
+      {/* Header */}
+      <div style={{ borderBottom: "1px solid #2a2a2a", padding: isMobile ? "24px 16px 0" : "32px 40px 0" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
           <div>
-            <p style={{ fontSize: 11, letterSpacing: "0.2em", color: "#888", textTransform: "uppercase", margin: "0 0 6px" }}>London Budget</p>
-            <h1 style={{ fontSize: 36, fontWeight: 400, margin: 0, color: "#e8e2d9", letterSpacing: "-0.02em" }}>Financial Planner</h1>
+            <p style={{ fontSize: 10, letterSpacing: "0.2em", color: "#888", textTransform: "uppercase", margin: "0 0 4px" }}>London Budget</p>
+            <h1 style={{ fontSize: isMobile ? 28 : 36, fontWeight: 400, margin: 0, color: "#e8e2d9", letterSpacing: "-0.02em" }}>Financial Planner</h1>
           </div>
           <div style={{ textAlign: "right" }}>
-            <p style={{ fontSize: 11, letterSpacing: "0.15em", color: "#888", textTransform: "uppercase", margin: "0 0 4px" }}>Annual Salary</p>
-            <p style={{ fontSize: 28, fontWeight: 400, margin: 0, color: "#c8a96e" }}>{"\u00a3"}{SALARY_ANNUAL.toLocaleString()}</p>
+            <p style={{ fontSize: 10, letterSpacing: "0.15em", color: "#888", textTransform: "uppercase", margin: "0 0 4px" }}>Annual Salary</p>
+            <p style={{ fontSize: isMobile ? 22 : 28, fontWeight: 400, margin: 0, color: "#c8a96e" }}>{"\u00a3"}{SALARY_ANNUAL.toLocaleString()}</p>
           </div>
         </div>
-        <div style={{ maxWidth: 960, margin: "24px auto 0", display: "flex", borderBottom: "1px solid #2a2a2a" }}>
+
+        {/* Tabs */}
+        <div style={{ display: "flex", borderBottom: "1px solid #2a2a2a", marginTop: 20 }}>
           {["overview", "breakdown", "tracker"].map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
               style={{
+                flex: isMobile ? 1 : "none",
                 background: "none", border: "none", cursor: "pointer",
-                padding: "10px 24px", fontSize: 13, letterSpacing: "0.1em",
+                padding: isMobile ? "10px 0" : "10px 24px",
+                fontSize: isMobile ? 11 : 13,
+                letterSpacing: "0.1em",
                 textTransform: "uppercase",
                 color: activeTab === tab ? "#c8a96e" : "#666",
                 borderBottom: activeTab === tab ? "1px solid #c8a96e" : "1px solid transparent",
@@ -160,30 +175,38 @@ export default function BudgetPlanner() {
         </div>
       </div>
 
-      <div style={{ maxWidth: 960, margin: "0 auto", padding: "32px 40px" }}>
+      <div style={{ padding: isMobile ? "20px 16px" : "32px 40px" }}>
 
+        {/* OVERVIEW TAB */}
         {activeTab === "overview" && (
           <div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16, marginBottom: 40 }}>
+            {/* Key numbers */}
+            <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr 1fr" : "repeat(3, 1fr)", gap: 12, marginBottom: 20 }}>
               {[
                 { label: "Monthly Take-Home", value: fmt(TAKE_HOME_MONTHLY), sub: "after tax & NI" },
                 { label: "Total Budgeted", value: fmt(totalBudget), sub: "per month" },
                 { label: "Remaining", value: fmt(leftOver), sub: "per month", highlight: true },
-              ].map((card) => (
-                <div key={card.label} style={{ background: "#181818", border: "1px solid #2a2a2a", padding: "24px", borderRadius: 2, borderTop: card.highlight ? "2px solid #c8a96e" : "2px solid #2a2a2a" }}>
-                  <p style={{ fontSize: 11, letterSpacing: "0.15em", textTransform: "uppercase", color: "#888", margin: "0 0 10px" }}>{card.label}</p>
-                  <p style={{ fontSize: 32, fontWeight: 400, margin: "0 0 4px", color: card.highlight ? "#c8a96e" : "#e8e2d9" }}>{card.value}</p>
-                  <p style={{ fontSize: 12, color: "#555", margin: 0 }}>{card.sub}</p>
+              ].map((card, i) => (
+                <div key={card.label} style={{
+                  background: "#181818", border: "1px solid #2a2a2a",
+                  padding: isMobile ? "16px 12px" : "24px", borderRadius: 2,
+                  borderTop: card.highlight ? "2px solid #c8a96e" : "2px solid #2a2a2a",
+                  gridColumn: isMobile && i === 2 ? "1 / -1" : "auto",
+                }}>
+                  <p style={{ fontSize: 10, letterSpacing: "0.1em", textTransform: "uppercase", color: "#888", margin: "0 0 8px" }}>{card.label}</p>
+                  <p style={{ fontSize: isMobile ? 24 : 32, fontWeight: 400, margin: "0 0 4px", color: card.highlight ? "#c8a96e" : "#e8e2d9" }}>{card.value}</p>
+                  <p style={{ fontSize: 11, color: "#555", margin: 0 }}>{card.sub}</p>
                 </div>
               ))}
             </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24 }}>
-              <div style={{ background: "#181818", border: "1px solid #2a2a2a", padding: "24px", borderRadius: 2 }}>
-                <p style={{ fontSize: 11, letterSpacing: "0.15em", textTransform: "uppercase", color: "#888", margin: "0 0 20px" }}>Spend Distribution</p>
-                <ResponsiveContainer width="100%" height={220}>
+            {/* Charts */}
+            <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 16, marginBottom: 16 }}>
+              <div style={{ background: "#181818", border: "1px solid #2a2a2a", padding: isMobile ? "16px" : "24px", borderRadius: 2 }}>
+                <p style={{ fontSize: 10, letterSpacing: "0.15em", textTransform: "uppercase", color: "#888", margin: "0 0 16px" }}>Spend Distribution</p>
+                <ResponsiveContainer width="100%" height={180}>
                   <PieChart>
-                    <Pie data={pieData} cx="50%" cy="50%" innerRadius={60} outerRadius={90} dataKey="value" strokeWidth={0}>
+                    <Pie data={pieData} cx="50%" cy="50%" innerRadius={50} outerRadius={75} dataKey="value" strokeWidth={0}>
                       {pieData.map((entry, i) => (
                         <Cell key={i} fill={entry.color} opacity={0.85} />
                       ))}
@@ -194,26 +217,26 @@ export default function BudgetPlanner() {
                     />
                   </PieChart>
                 </ResponsiveContainer>
-                <div style={{ display: "flex", flexWrap: "wrap", gap: "8px 16px", marginTop: 8 }}>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: "6px 12px", marginTop: 8 }}>
                   {pieData.map((d) => (
-                    <div key={d.name} style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                      <div style={{ width: 8, height: 8, borderRadius: "50%", background: d.color }} />
-                      <span style={{ fontSize: 11, color: "#888" }}>{d.name}</span>
+                    <div key={d.name} style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                      <div style={{ width: 7, height: 7, borderRadius: "50%", background: d.color }} />
+                      <span style={{ fontSize: 10, color: "#888" }}>{d.name}</span>
                     </div>
                   ))}
                 </div>
               </div>
 
-              <div style={{ background: "#181818", border: "1px solid #2a2a2a", padding: "24px", borderRadius: 2 }}>
-                <p style={{ fontSize: 11, letterSpacing: "0.15em", textTransform: "uppercase", color: "#888", margin: "0 0 20px" }}>By Category</p>
+              <div style={{ background: "#181818", border: "1px solid #2a2a2a", padding: isMobile ? "16px" : "24px", borderRadius: 2 }}>
+                <p style={{ fontSize: 10, letterSpacing: "0.15em", textTransform: "uppercase", color: "#888", margin: "0 0 16px" }}>By Category</p>
                 {BUDGET_CATEGORIES.map((cat) => {
                   const total = cat.items.reduce((s, i) => s + i.amount, 0);
                   const pct = ((Math.max(total, 0) / TAKE_HOME_MONTHLY) * 100).toFixed(0);
                   return (
-                    <div key={cat.name} style={{ marginBottom: 14 }}>
-                      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
-                        <span style={{ fontSize: 13, color: "#ccc" }}>{cat.name}</span>
-                        <span style={{ fontSize: 13, color: "#e8e2d9" }}>{fmt(total)}</span>
+                    <div key={cat.name} style={{ marginBottom: 12 }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 3 }}>
+                        <span style={{ fontSize: 12, color: "#ccc" }}>{cat.name}</span>
+                        <span style={{ fontSize: 12, color: "#e8e2d9" }}>{fmt(total)}</span>
                       </div>
                       <div style={{ height: 3, background: "#2a2a2a", borderRadius: 2 }}>
                         <div style={{ height: "100%", width: pct + "%", background: cat.color, borderRadius: 2 }} />
@@ -224,18 +247,19 @@ export default function BudgetPlanner() {
               </div>
             </div>
 
-            <div style={{ marginTop: 24, background: "#181818", border: "1px solid #2a2a2a", padding: "24px", borderRadius: 2 }}>
-              <p style={{ fontSize: 11, letterSpacing: "0.15em", textTransform: "uppercase", color: "#888", margin: "0 0 16px" }}>Annual Perspective</p>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16 }}>
+            {/* Annual */}
+            <div style={{ background: "#181818", border: "1px solid #2a2a2a", padding: isMobile ? "16px" : "24px", borderRadius: 2 }}>
+              <p style={{ fontSize: 10, letterSpacing: "0.15em", textTransform: "uppercase", color: "#888", margin: "0 0 16px" }}>Annual Perspective</p>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 }}>
                 {[
                   { label: "Coffee (4x/week)", note: "\u00a3828/yr" },
                   { label: "Therapy", note: "\u00a33,360/yr" },
                   { label: "Fitness", note: "\u00a31,560/yr" },
                   { label: "Surplus", note: "\u00a3" + (leftOver * 12).toLocaleString() + "/yr", gold: true },
                 ].map((item) => (
-                  <div key={item.label} style={{ borderLeft: "2px solid " + (item.gold ? "#c8a96e" : "#2a2a2a"), paddingLeft: 14 }}>
-                    <p style={{ fontSize: 11, color: "#666", margin: "0 0 4px" }}>{item.label}</p>
-                    <p style={{ fontSize: 20, color: item.gold ? "#c8a96e" : "#e8e2d9", margin: 0 }}>{item.note}</p>
+                  <div key={item.label} style={{ borderLeft: "2px solid " + (item.gold ? "#c8a96e" : "#2a2a2a"), paddingLeft: 12 }}>
+                    <p style={{ fontSize: 10, color: "#666", margin: "0 0 4px" }}>{item.label}</p>
+                    <p style={{ fontSize: isMobile ? 16 : 20, color: item.gold ? "#c8a96e" : "#e8e2d9", margin: 0 }}>{item.note}</p>
                   </div>
                 ))}
               </div>
@@ -243,8 +267,9 @@ export default function BudgetPlanner() {
           </div>
         )}
 
+        {/* BREAKDOWN TAB */}
         {activeTab === "breakdown" && (
-          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             {BUDGET_CATEGORIES.map((cat) => {
               const catTotal = cat.items.reduce((s, i) => s + i.amount, 0);
               const isOpen = expandedCat === cat.name;
@@ -252,114 +277,105 @@ export default function BudgetPlanner() {
                 <div key={cat.name} style={{ background: "#181818", border: "1px solid #2a2a2a", borderRadius: 2, overflow: "hidden" }}>
                   <button
                     onClick={() => setExpandedCat(isOpen ? null : cat.name)}
-                    style={{ width: "100%", background: "none", border: "none", cursor: "pointer", padding: "18px 24px", display: "flex", justifyContent: "space-between", alignItems: "center" }}
+                    style={{ width: "100%", background: "none", border: "none", cursor: "pointer", padding: "16px", display: "flex", justifyContent: "space-between", alignItems: "center" }}
                   >
-                    <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                      <div style={{ width: 10, height: 10, borderRadius: "50%", background: cat.color }} />
-                      <span style={{ fontSize: 15, color: "#e8e2d9" }}>{cat.name}</span>
+                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                      <div style={{ width: 9, height: 9, borderRadius: "50%", background: cat.color }} />
+                      <span style={{ fontSize: 14, color: "#e8e2d9" }}>{cat.name}</span>
                     </div>
-                    <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-                      <span style={{ fontSize: 18, color: "#e8e2d9" }}>{fmt(catTotal)}</span>
+                    <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                      <span style={{ fontSize: 16, color: "#e8e2d9" }}>{fmt(catTotal)}</span>
                       <span style={{ color: "#555", fontSize: 18 }}>{isOpen ? "-" : "+"}</span>
                     </div>
                   </button>
                   {isOpen && (
-                    <div style={{ borderTop: "1px solid #222", padding: "4px 0 12px" }}>
+                    <div style={{ borderTop: "1px solid #222", padding: "4px 0 10px" }}>
                       {cat.items.map((item) => (
-                        <div key={item.name} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 24px 10px 46px" }}>
+                        <div key={item.name} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 16px 10px 36px" }}>
                           <div>
-                            <span style={{ fontSize: 14, color: "#bbb" }}>{item.name}</span>
+                            <span style={{ fontSize: 13, color: "#bbb" }}>{item.name}</span>
                             {item.note && (
-                              <span style={{ fontSize: 11, color: "#666", marginLeft: 10 }}>{item.note}</span>
+                              <span style={{ fontSize: 10, color: "#666", marginLeft: 8 }}>{item.note}</span>
                             )}
                           </div>
-                          <span style={{ fontSize: 14, color: item.amount < 0 ? "#7eb8a4" : "#e8e2d9" }}>
+                          <span style={{ fontSize: 13, color: item.amount < 0 ? "#7eb8a4" : "#e8e2d9" }}>
                             {item.amount === 0 ? "TBC" : fmt(item.amount)}
                           </span>
                         </div>
                       ))}
-                      <div style={{ display: "flex", justifyContent: "space-between", padding: "10px 24px 4px 46px", borderTop: "1px solid #222", marginTop: 4 }}>
-                        <span style={{ fontSize: 12, color: "#666", letterSpacing: "0.1em", textTransform: "uppercase" }}>Monthly total</span>
-                        <span style={{ fontSize: 14, color: cat.color }}>{fmt(catTotal)}</span>
+                      <div style={{ display: "flex", justifyContent: "space-between", padding: "10px 16px 4px 36px", borderTop: "1px solid #222", marginTop: 4 }}>
+                        <span style={{ fontSize: 11, color: "#666", letterSpacing: "0.1em", textTransform: "uppercase" }}>Monthly total</span>
+                        <span style={{ fontSize: 13, color: cat.color }}>{fmt(catTotal)}</span>
                       </div>
                     </div>
                   )}
                 </div>
               );
             })}
-            <div style={{ background: "#181818", border: "1px solid #c8a96e", borderRadius: 2, padding: "18px 24px", display: "flex", justifyContent: "space-between" }}>
-              <span style={{ fontSize: 15, color: "#c8a96e" }}>Total Budgeted</span>
-              <span style={{ fontSize: 22, color: "#c8a96e" }}>{fmt(totalBudget)}</span>
+            <div style={{ background: "#181818", border: "1px solid #c8a96e", borderRadius: 2, padding: "16px", display: "flex", justifyContent: "space-between" }}>
+              <span style={{ fontSize: 14, color: "#c8a96e" }}>Total Budgeted</span>
+              <span style={{ fontSize: 20, color: "#c8a96e" }}>{fmt(totalBudget)}</span>
             </div>
           </div>
         )}
 
+        {/* TRACKER TAB */}
         {activeTab === "tracker" && (
           <div>
-            <div style={{ background: "#181818", border: "1px solid #2a2a2a", borderRadius: 2, padding: "24px", marginBottom: 24 }}>
-              <p style={{ fontSize: 11, letterSpacing: "0.15em", textTransform: "uppercase", color: "#888", margin: "0 0 16px" }}>Log a Transaction</p>
-              <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1.5fr 1fr auto", gap: 10, alignItems: "end" }}>
-                <div>
-                  <label style={{ fontSize: 11, color: "#666", display: "block", marginBottom: 6 }}>DESCRIPTION</label>
-                  <input
-                    value={form.name}
-                    onChange={(e) => setForm({ ...form, name: e.target.value })}
-                    placeholder="e.g. Tesco weekly shop"
-                    style={{ width: "100%", background: "#111", border: "1px solid #333", borderRadius: 2, padding: "10px 12px", color: "#e8e2d9", fontSize: 13, boxSizing: "border-box" }}
-                  />
-                </div>
-                <div>
-                  <label style={{ fontSize: 11, color: "#666", display: "block", marginBottom: 6 }}>AMOUNT</label>
+            <div style={{ background: "#181818", border: "1px solid #2a2a2a", borderRadius: 2, padding: "16px", marginBottom: 16 }}>
+              <p style={{ fontSize: 10, letterSpacing: "0.15em", textTransform: "uppercase", color: "#888", margin: "0 0 14px" }}>Log a Transaction</p>
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                <input
+                  value={form.name}
+                  onChange={(e) => setForm({ ...form, name: e.target.value })}
+                  placeholder="Description (e.g. Tesco weekly shop)"
+                  style={{ width: "100%", background: "#111", border: "1px solid #333", borderRadius: 2, padding: "12px", color: "#e8e2d9", fontSize: 14, boxSizing: "border-box" }}
+                />
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
                   <input
                     value={form.amount}
                     onChange={(e) => setForm({ ...form, amount: e.target.value })}
                     type="number"
-                    placeholder="0.00"
-                    style={{ width: "100%", background: "#111", border: "1px solid #333", borderRadius: 2, padding: "10px 12px", color: "#e8e2d9", fontSize: 13, boxSizing: "border-box" }}
+                    placeholder="Amount (£)"
+                    style={{ width: "100%", background: "#111", border: "1px solid #333", borderRadius: 2, padding: "12px", color: "#e8e2d9", fontSize: 14, boxSizing: "border-box" }}
                   />
-                </div>
-                <div>
-                  <label style={{ fontSize: 11, color: "#666", display: "block", marginBottom: 6 }}>CATEGORY</label>
-                  <select
-                    value={form.category}
-                    onChange={(e) => setForm({ ...form, category: e.target.value })}
-                    style={{ width: "100%", background: "#111", border: "1px solid #333", borderRadius: 2, padding: "10px 12px", color: "#e8e2d9", fontSize: 13, boxSizing: "border-box" }}
-                  >
-                    {BUDGET_CATEGORIES.map((c) => (
-                      <option key={c.name} value={c.name}>{c.name}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label style={{ fontSize: 11, color: "#666", display: "block", marginBottom: 6 }}>DATE</label>
                   <input
                     value={form.date}
                     onChange={(e) => setForm({ ...form, date: e.target.value })}
                     type="date"
-                    style={{ width: "100%", background: "#111", border: "1px solid #333", borderRadius: 2, padding: "10px 12px", color: "#e8e2d9", fontSize: 13, boxSizing: "border-box" }}
+                    style={{ width: "100%", background: "#111", border: "1px solid #333", borderRadius: 2, padding: "12px", color: "#e8e2d9", fontSize: 14, boxSizing: "border-box" }}
                   />
                 </div>
+                <select
+                  value={form.category}
+                  onChange={(e) => setForm({ ...form, category: e.target.value })}
+                  style={{ width: "100%", background: "#111", border: "1px solid #333", borderRadius: 2, padding: "12px", color: "#e8e2d9", fontSize: 14, boxSizing: "border-box" }}
+                >
+                  {BUDGET_CATEGORIES.map((c) => (
+                    <option key={c.name} value={c.name}>{c.name}</option>
+                  ))}
+                </select>
                 <button
                   onClick={addTransaction}
-                  style={{ background: "#c8a96e", border: "none", borderRadius: 2, padding: "10px 20px", color: "#0f0f0f", fontSize: 13, cursor: "pointer", whiteSpace: "nowrap" }}
+                  style={{ width: "100%", background: "#c8a96e", border: "none", borderRadius: 2, padding: "14px", color: "#0f0f0f", fontSize: 14, cursor: "pointer", fontFamily: "Georgia, serif", letterSpacing: "0.05em" }}
                 >
-                  Add
+                  Add Transaction
                 </button>
               </div>
             </div>
 
             {transactions.length > 0 && (
-              <div style={{ background: "#181818", border: "1px solid #2a2a2a", borderRadius: 2, padding: "24px", marginBottom: 24 }}>
-                <p style={{ fontSize: 11, letterSpacing: "0.15em", textTransform: "uppercase", color: "#888", margin: "0 0 16px" }}>Spent vs Budgeted</p>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12, marginBottom: 16 }}>
+              <div style={{ background: "#181818", border: "1px solid #2a2a2a", borderRadius: 2, padding: "16px", marginBottom: 16 }}>
+                <p style={{ fontSize: 10, letterSpacing: "0.15em", textTransform: "uppercase", color: "#888", margin: "0 0 14px" }}>Spent vs Budgeted</p>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10, marginBottom: 14 }}>
                   {[
-                    { label: "Total Spent", value: fmt(totalSpent), color: "#e8e2d9" },
-                    { label: "Total Budgeted", value: fmt(totalBudget), color: "#888" },
+                    { label: "Spent", value: fmt(totalSpent), color: "#e8e2d9" },
+                    { label: "Budgeted", value: fmt(totalBudget), color: "#888" },
                     { label: "Remaining", value: fmt(totalBudget - totalSpent), color: totalBudget - totalSpent >= 0 ? "#7eb8a4" : "#c87e7e" },
                   ].map((s) => (
                     <div key={s.label} style={{ textAlign: "center" }}>
-                      <p style={{ fontSize: 11, color: "#666", margin: "0 0 6px", textTransform: "uppercase", letterSpacing: "0.1em" }}>{s.label}</p>
-                      <p style={{ fontSize: 24, color: s.color, margin: 0 }}>{s.value}</p>
+                      <p style={{ fontSize: 10, color: "#666", margin: "0 0 4px", textTransform: "uppercase", letterSpacing: "0.1em" }}>{s.label}</p>
+                      <p style={{ fontSize: 18, color: s.color, margin: 0 }}>{s.value}</p>
                     </div>
                   ))}
                 </div>
@@ -370,8 +386,8 @@ export default function BudgetPlanner() {
                   const pct = Math.min((spent / Math.max(budget, 1)) * 100, 100);
                   const over = spent > budget;
                   return (
-                    <div key={cat.name} style={{ marginBottom: 12 }}>
-                      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+                    <div key={cat.name} style={{ marginBottom: 10 }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 3 }}>
                         <span style={{ fontSize: 12, color: "#aaa" }}>{cat.name}</span>
                         <span style={{ fontSize: 12, color: over ? "#c87e7e" : "#aaa" }}>{fmt(spent)} / {fmt(budget)}</span>
                       </div>
@@ -385,34 +401,32 @@ export default function BudgetPlanner() {
             )}
 
             {transactions.length === 0 ? (
-              <div style={{ textAlign: "center", padding: "60px 0", color: "#444" }}>
+              <div style={{ textAlign: "center", padding: "40px 0", color: "#444" }}>
                 <p style={{ fontSize: 14 }}>No transactions logged yet.</p>
               </div>
             ) : (
               <div style={{ background: "#181818", border: "1px solid #2a2a2a", borderRadius: 2 }}>
-                <div style={{ padding: "16px 24px", borderBottom: "1px solid #222", display: "grid", gridTemplateColumns: "1fr 1fr 120px 80px 40px", gap: 12 }}>
-                  {["Description", "Category", "Date", "Amount", ""].map((h) => (
-                    <span key={h} style={{ fontSize: 10, letterSpacing: "0.15em", textTransform: "uppercase", color: "#555" }}>{h}</span>
-                  ))}
-                </div>
                 {transactions.map((t) => {
                   const cat = BUDGET_CATEGORIES.find((c) => c.name === t.category);
                   const dotColor = cat ? cat.color : "#555";
                   return (
-                    <div key={t.id} style={{ padding: "14px 24px", borderBottom: "1px solid #1a1a1a", display: "grid", gridTemplateColumns: "1fr 1fr 120px 80px 40px", gap: 12, alignItems: "center" }}>
-                      <span style={{ fontSize: 13, color: "#ccc" }}>{t.name}</span>
-                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                        <div style={{ width: 7, height: 7, borderRadius: "50%", background: dotColor }} />
-                        <span style={{ fontSize: 12, color: "#888" }}>{t.category}</span>
+                    <div key={t.id} style={{ padding: "14px 16px", borderBottom: "1px solid #1a1a1a", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontSize: 13, color: "#ccc", marginBottom: 3 }}>{t.name}</div>
+                        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                          <div style={{ width: 6, height: 6, borderRadius: "50%", background: dotColor }} />
+                          <span style={{ fontSize: 11, color: "#666" }}>{t.category} · {t.date}</span>
+                        </div>
                       </div>
-                      <span style={{ fontSize: 12, color: "#666" }}>{t.date}</span>
-                      <span style={{ fontSize: 14, color: "#e8e2d9" }}>{fmt(t.amount)}</span>
-                      <button
-                        onClick={() => deleteTransaction(t.id)}
-                        style={{ background: "none", border: "none", cursor: "pointer", color: "#444", fontSize: 16, padding: 0 }}
-                      >
-                        x
-                      </button>
+                      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                        <span style={{ fontSize: 15, color: "#e8e2d9" }}>{fmt(t.amount)}</span>
+                        <button
+                          onClick={() => deleteTransaction(t.id)}
+                          style={{ background: "none", border: "none", cursor: "pointer", color: "#444", fontSize: 18, padding: 0, lineHeight: 1 }}
+                        >
+                          ×
+                        </button>
+                      </div>
                     </div>
                   );
                 })}
